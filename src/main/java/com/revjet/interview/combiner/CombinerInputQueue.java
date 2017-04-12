@@ -28,13 +28,8 @@ final class CombinerInputQueue<T> implements Combiner.CombinerInput<T> {
                        TimeUnit timeUnit) {
         this.priority = priority;
         this.emptyTimeoutPeriod = Duration.ofNanos(TimeUnit.NANOSECONDS.convert(emptyTimeoutPeriod, timeUnit));
-        this.emptyPeriod = Duration.ZERO;
 
-        if (queue.isEmpty()) {
-            this.emptyStartTime = LocalDateTime.now();
-        } else {
-            emptyStartTime = null;
-        }
+        recalculateTimeout();
     }
 
     @Override

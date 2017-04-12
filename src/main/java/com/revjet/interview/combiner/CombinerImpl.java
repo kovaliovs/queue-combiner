@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.*;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
@@ -22,7 +23,7 @@ public class CombinerImpl<T> implements Combiner<T> {
 
     private final List<CombinerInputQueue<T>> queues = new ArrayList<>();
     private Double maxWeight = 0.0;
-    private final ReentrantLock mainLock = new ReentrantLock();
+    private final Lock mainLock = new ReentrantLock();
 
     private final ScheduledExecutorService removeQueuesService = Executors.newSingleThreadScheduledExecutor();
     private final ScheduledExecutorService pollService = Executors.newSingleThreadScheduledExecutor();
