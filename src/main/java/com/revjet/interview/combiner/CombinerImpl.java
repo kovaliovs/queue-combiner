@@ -20,6 +20,7 @@ public class CombinerImpl<T> implements Combiner<T> {
     private final Logger log = LoggerFactory.getLogger(CombinerImpl.class);
 
     private static final int REMOVE_QUEUE_DELAY = 100;
+    private static final int POLL_QUEUE_DELAY = 10;
 
     private final List<CombinerInputQueue<T>> queues = new ArrayList<>();
     private Double maxWeight = 0.0;
@@ -55,10 +56,20 @@ public class CombinerImpl<T> implements Combiner<T> {
             return value;
         }
 
+        CompletableFuture<T> result = new CompletableFuture<>();
+        ScheduledFuture<?> task = pollService.scheduleWithFixedDelay(() -> {
+            T v = pollNext();
+            if (v != null) {
+                result.complete(v);
+            }
+        }, POLL_QUEUE_DELAY, POLL_QUEUE_DELAY, TimeUnit.MILLISECONDS);
+
         try {
-            return pollService.schedule(this::pollNext, timeout, timeUnit).get();
-        } catch (ExecutionException ignored) {
+            return result.get(timeout, timeUnit);
+        } catch (ExecutionException | TimeoutException e) {
             return null;
+        } finally {
+            task.cancel(false);
         }
     }
 
